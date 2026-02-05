@@ -1,0 +1,486 @@
+{
+    "date": "2025-12-10",
+    "time": "9:00 AM - 12:00 PM",
+    "rooms": [
+        {
+            "roomCode": "LT-303",
+            "type": "LT",
+            "subjectPair": [
+                "ME_103",
+                "CS_104"
+            ],
+            "allocations": [
+                {
+                    "seatId": "L1-1",
+                    "rollNo": "ME001",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L1-5",
+                    "rollNo": "ME002",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L1-7",
+                    "rollNo": "CS001",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L2-2",
+                    "rollNo": "CS002",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L2-8",
+                    "rollNo": "ME003",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L3-1",
+                    "rollNo": "ME004",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L3-5",
+                    "rollNo": "ME005",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L3-7",
+                    "rollNo": "CS003",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L4-2",
+                    "rollNo": "CS004",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L4-8",
+                    "rollNo": "ME006",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L5-1",
+                    "rollNo": "ME007",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L5-5",
+                    "rollNo": "ME008",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L5-7",
+                    "rollNo": "CS005",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L6-2",
+                    "rollNo": "CS006",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L6-8",
+                    "rollNo": "ME009",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R1-1",
+                    "rollNo": "CS007",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R1-5",
+                    "rollNo": "CS008",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R1-7",
+                    "rollNo": "ME010",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R2-2",
+                    "rollNo": "ME011",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R2-8",
+                    "rollNo": "CS009",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R3-1",
+                    "rollNo": "CS010",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R3-5",
+                    "rollNo": "CS011",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R3-7",
+                    "rollNo": "ME012",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R4-2",
+                    "rollNo": "ME013",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R4-8",
+                    "rollNo": "CS012",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R5-1",
+                    "rollNo": "CS013",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R5-5",
+                    "rollNo": "CS014",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R5-7",
+                    "rollNo": "ME014",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R6-2",
+                    "rollNo": "ME015",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R6-8",
+                    "rollNo": "CS015",
+                    "subjectCode": "CS_104"
+                }
+            ]
+        },
+        {
+            "roomCode": "LT-304",
+            "type": "LT",
+            "subjectPair": [
+                "ME_103",
+                "CS_104"
+            ],
+            "allocations": [
+                {
+                    "seatId": "L1-1",
+                    "rollNo": "ME016",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L1-5",
+                    "rollNo": "ME017",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L1-7",
+                    "rollNo": "CS016",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L2-2",
+                    "rollNo": "CS017",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L2-8",
+                    "rollNo": "ME018",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L3-1",
+                    "rollNo": "ME019",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L3-5",
+                    "rollNo": "ME020",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L3-7",
+                    "rollNo": "CS018",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L4-2",
+                    "rollNo": "CS019",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L4-8",
+                    "rollNo": "ME021",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L5-1",
+                    "rollNo": "ME022",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L5-5",
+                    "rollNo": "ME023",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L5-7",
+                    "rollNo": "CS020",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L6-2",
+                    "rollNo": "CS021",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L6-8",
+                    "rollNo": "ME024",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R1-1",
+                    "rollNo": "CS022",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R1-5",
+                    "rollNo": "CS023",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R1-7",
+                    "rollNo": "ME025",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R2-2",
+                    "rollNo": "ME026",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R2-8",
+                    "rollNo": "CS024",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R3-1",
+                    "rollNo": "CS025",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R3-5",
+                    "rollNo": "CS026",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R3-7",
+                    "rollNo": "ME027",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R4-2",
+                    "rollNo": "ME028",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R4-8",
+                    "rollNo": "CS027",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R5-1",
+                    "rollNo": "CS028",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R5-5",
+                    "rollNo": "CS029",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R5-7",
+                    "rollNo": "ME029",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R6-2",
+                    "rollNo": "ME030",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R6-8",
+                    "rollNo": "CS030",
+                    "subjectCode": "CS_104"
+                }
+            ]
+        },
+        {
+            "roomCode": "LT-401",
+            "type": "LT",
+            "subjectPair": [
+                "ME_103",
+                "CS_104"
+            ],
+            "allocations": [
+                {
+                    "seatId": "L1-1",
+                    "rollNo": "ME031",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L1-5",
+                    "rollNo": "ME032",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L1-7",
+                    "rollNo": "CS031",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L2-2",
+                    "rollNo": "CS032",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L2-8",
+                    "rollNo": "ME033",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L3-1",
+                    "rollNo": "ME034",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L3-5",
+                    "rollNo": "ME035",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L3-7",
+                    "rollNo": "CS033",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L4-2",
+                    "rollNo": "CS034",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L4-8",
+                    "rollNo": "ME036",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L5-1",
+                    "rollNo": "ME037",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L5-5",
+                    "rollNo": "ME038",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "L5-7",
+                    "rollNo": "CS035",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L6-2",
+                    "rollNo": "CS036",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "L6-8",
+                    "rollNo": "ME039",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R1-1",
+                    "rollNo": "CS037",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R1-5",
+                    "rollNo": "CS038",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R1-7",
+                    "rollNo": "ME040",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R2-2",
+                    "rollNo": "ME041",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R2-8",
+                    "rollNo": "CS039",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R3-1",
+                    "rollNo": "CS040",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R3-5",
+                    "rollNo": "CS041",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R3-7",
+                    "rollNo": "ME042",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R4-2",
+                    "rollNo": "ME043",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R4-8",
+                    "rollNo": "CS042",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R5-1",
+                    "rollNo": "CS043",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R5-5",
+                    "rollNo": "CS044",
+                    "subjectCode": "CS_104"
+                },
+                {
+                    "seatId": "R5-7",
+                    "rollNo": "ME044",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R6-2",
+                    "rollNo": "ME045",
+                    "subjectCode": "ME_103"
+                },
+                {
+                    "seatId": "R6-8",
+                    "rollNo": "CS045",
+                    "subjectCode": "CS_104"
+                }
+            ]
+        }
+    ]
+}

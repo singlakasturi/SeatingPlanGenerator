@@ -1,0 +1,31 @@
+ø# =========================
+# Node.js (Backend + Frontend)
+# =========================
+node_modules/
+.env
+uploads/
+!Backend/NodeBackend/.env
+
+# =========================
+# Java / Spring Boot
+# =========================
+target/
+.mvn/
+.gradle/
+application.properties
+!Backend/SpringBackend/NITJ/NITJ/src/main/resources/application.properties
+
+# =========================
+# IDE / OS
+# =========================
+.idea/
+.vscode/
+.DS_Store
+*.log
+
+# =========================
+# Build outputs
+# =========================
+dist/
+build/
+
