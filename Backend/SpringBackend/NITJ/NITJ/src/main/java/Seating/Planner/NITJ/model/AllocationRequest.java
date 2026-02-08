@@ -1,28 +1,65 @@
 package Seating.Planner.NITJ.model;
 
-
 import java.util.List;
 
 public class AllocationRequest {
 
     private String programme;
     private String year;
-    private List<String> subjectCode;
     private String date;
     private String time;
 
-    public String getProgramme() { return programme; }
-    public void setProgramme(String programme) { this.programme = programme; }
+    // 🔑 ALWAYS present
+    private List<String> subjects;
 
-    public String getYear() { return year; }
-    public void setYear(String year) { this.year = year; }
+    // 🔑 Optional (empty = single-subject mode)
+    private List<SubjectPair> subjectPairs;
 
-    public List<String> getSubjectCode() { return subjectCode; }
-    public void setSubjectCode(List<String> subjectCode) { this.subjectCode = subjectCode; }
+    public String getProgramme() {
+        return programme;
+    }
 
-    public String getDate() { return date; }
-    public void setDate(String date) { this.date = date; }
+    public void setProgramme(String programme) {
+        this.programme = programme;
+    }
 
-    public String getTime() { return time; }
-    public void setTime(String time) { this.time = time; }
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public List<String> getSubjects() {
+        return subjects;
+    }
+
+    public void setSubjects(List<String> subjects) {
+        this.subjects = subjects;
+    }
+
+    public List<SubjectPair> getSubjectPairs() {
+        return subjectPairs;
+    }
+
+    public void setSubjectPairs(List<SubjectPair> subjectPairs) {
+        this.subjectPairs = subjectPairs;
+    }
 }

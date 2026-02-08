@@ -78,14 +78,23 @@ public class HistoryController {
      * Save new allocation to history
      */
     @PostMapping("/save")
-    public ResponseEntity<?> saveAllocation(@RequestBody Map<String, Object> payload) {
-        try {
-            int index = historyService.saveAllocation(payload);
-            return ResponseEntity.ok(Map.of("success", true, "index", index));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public void save(@RequestBody Map<String, Object> payload) {
+
+        // 🔑 Generate allocationId for history tracking
+        String allocationId = java.util.UUID.randomUUID().toString();
+
+        // These come from Node’s aggregated response
+        String date = (String) payload.getOrDefault("date", "MULTI_DATE");
+        String time = (String) payload.getOrDefault("time", "MULTI_TIME");
+
+        historyService.saveAllocation(
+                allocationId,
+                date,
+                time,
+                payload
+        );
     }
+
 
     /**
      * Get all previous allocation plans
@@ -111,12 +120,39 @@ public class HistoryController {
     /**
      * Delete allocation plan by index
      */
+    @DeleteMapping("/latest")
+    public String deleteLatest(
+            @RequestParam String date,
+            @RequestParam String timeSlot) {
+
+        return historyService
+                .removeLastFor(date, timeSlot)
+                .map(e -> "Removed allocation " + e.getAllocationId())
+                .orElseThrow(() ->
+                        new IllegalStateException(
+                                "No allocation found for " + date + " " + timeSlot
+                        )
+                );
+    }
+
     @DeleteMapping("/{index}")
     public ResponseEntity<?> deleteByIndex(@PathVariable int index) {
-        boolean deleted = historyService.deleteByIndex(index);
-        if (deleted) {
-            return ResponseEntity.ok(Map.of("success", true, "message", "Plan deleted"));
+        try {
+            AllocationHistoryEntry entry = historyService.getByIndex(index);
+            historyService.removeByIndex(index);
+
+            return ResponseEntity.ok(
+                    Map.of(
+                            "success", true,
+                            "deletedIndex", index,
+                            "allocationId", entry.getAllocationId()
+                    )
+            );
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
         }
-        return ResponseEntity.badRequest().body(Map.of("error", "Plan not found"));
     }
+
+
 }

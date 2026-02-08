@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./SubjectPairing.css";
 
 export default function SubjectPairing() {
   const navigate = useNavigate();
 
-  const payload = useMemo(() => {
+  /* ================= LOAD STORED DATA ================= */
+
+  const allocationPayload = useMemo(() => {
     try {
       const cached = sessionStorage.getItem("allocationPayload");
       return cached ? JSON.parse(cached) : null;
@@ -25,13 +28,14 @@ export default function SubjectPairing() {
 
   const [dateData, setDateData] = useState([]);
   const [dateIndex, setDateIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  /* ================= LOAD SUBJECTS ================= */
+  /* ================= BUILD SUBJECTS + PAIRS ================= */
 
   useEffect(() => {
-    if (!payload?.results?.length) return;
+    if (!allocationPayload?.results?.length || !allocationRequest) return;
 
-    const built = payload.results.map(result => {
+    const built = allocationPayload.results.map((result) => {
       const subjects = getSubjectsForDate(result, allocationRequest);
       const pairs = buildPairs(subjects);
 
@@ -39,24 +43,24 @@ export default function SubjectPairing() {
         date: result.date,
         time: result.response?.time || "",
         subjects,
-        pairs
+        pairs,
       };
     });
 
     setDateData(built);
     setDateIndex(0);
-  }, [payload, allocationRequest]);
+  }, [allocationPayload, allocationRequest]);
 
-  /* ================= SWAP LOGIC ================= */
+  /* ================= SWAP SUBJECTS ================= */
 
   const swapSubjects = (pairIndex, side, newCode) => {
-    setDateData(prev =>
+    setDateData((prev) =>
       prev.map((item, idx) => {
         if (idx !== dateIndex) return item;
 
-        const updatedPairs = item.pairs.map(p => ({
+        const updatedPairs = item.pairs.map((p) => ({
           left: { ...p.left },
-          right: { ...p.right }
+          right: { ...p.right },
         }));
 
         const current = updatedPairs[pairIndex]?.[side];
@@ -86,57 +90,59 @@ export default function SubjectPairing() {
     );
   };
 
-  /* ================= SAVE + RETURN ================= */
+  /* ================= SAVE + REALLOCATE ================= */
 
-  const saveAndReturn = () => {
-    const updatedPayload = (() => {
-      try {
-        const cached = sessionStorage.getItem("allocationPayload");
-        return cached ? JSON.parse(cached) : null;
-      } catch {
-        return null;
-      }
-    })();
+  const saveAndReallocate = async () => {
+    const subjectPairsByDate = {};
 
-    if (!updatedPayload?.results?.length) return;
-
-    const pairingLookup = new Map(
-      dateData.map(item => {
-        const map = new Map();
-        item.pairs.forEach(pair => {
-          const pairList = [pair.left.code, pair.right.code];
-          map.set(pair.left.code, pairList);
-          map.set(pair.right.code, pairList);
-        });
-        return [item.date, map];
-      })
-    );
-
-    const updatedResults = updatedPayload.results.map(result => {
-      const map = pairingLookup.get(result.date);
-      if (!map) return result;
-
-      const rooms = (result.response?.rooms || []).map(room => {
-        const pair = (room.subjectPair || []).find(code => map.has(code));
-        if (!pair) return room;
-        return { ...room, subjectPair: map.get(pair) };
-      });
-
-      return {
-        ...result,
-        response: {
-          ...result.response,
-          rooms
-        }
-      };
+    dateData.forEach((item) => {
+      subjectPairsByDate[item.date] = item.pairs
+        // drop UI-only single-subject placeholders
+        .filter((p) => p.left.code !== p.right.code)
+        .map((p) => ({
+          subjectA: p.left.code,
+          subjectB: p.right.code,
+        }));
     });
 
-    updatedPayload.results = updatedResults;
-    sessionStorage.setItem("allocationPayload", JSON.stringify(updatedPayload));
-    navigate("/room-allocation");
+    sessionStorage.setItem(
+      "subjectPairsByDate",
+      JSON.stringify(subjectPairsByDate)
+    );
+
+    if (!allocationRequest) {
+      alert("Original allocation request not found.");
+      return;
+    }
+
+    const reqBody = {
+      ...allocationRequest,
+      subjectPairsByDate,
+    };
+
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        "http://localhost:5000/allocate/reallocate",
+        reqBody,
+        { withCredentials: true }
+      );
+
+      sessionStorage.setItem(
+        "allocationPayload",
+        JSON.stringify(res.data)
+      );
+
+      navigate("/room-allocation", { state: res.data });
+    } catch (err) {
+      alert("Reallocation failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  /* ================= RENDER ================= */
+  /* ================= EMPTY STATE ================= */
 
   if (!dateData.length) {
     return (
@@ -156,7 +162,7 @@ export default function SubjectPairing() {
           <div className="room-container">
             <h2 className="room-title">Subject Pairing</h2>
             <p style={{ textAlign: "center" }}>
-              No pairing data found. Please submit details first.
+              No pairing data found. Please submit exam details first.
             </p>
           </div>
         </main>
@@ -166,12 +172,16 @@ export default function SubjectPairing() {
 
   const current = dateData[dateIndex];
 
+  /* ================= RENDER ================= */
+
   return (
     <div className="subject-pairing">
+      {/* HEADER */}
       <header className="header">
         <img src="/nitjlogo.png" alt="NITJ Logo" />
       </header>
 
+      {/* NAVBAR */}
       <div className="nav-bar">
         <div className="nav-left">
           <img src="/seating planner logo.png" alt="" />
@@ -183,21 +193,21 @@ export default function SubjectPairing() {
         <div className="room-container">
           <h2 className="room-title">Subject Pairing</h2>
 
+          {/* DATE NAV */}
           <div className="exam-info">
             <button
-              onClick={() => setDateIndex(i => Math.max(i - 1, 0))}
+              onClick={() => setDateIndex((i) => Math.max(i - 1, 0))}
               disabled={dateIndex === 0}
             >
               &lt; Prev
             </button>
 
             <div className="date-control">
-              <label htmlFor="dateSelect">Date</label>
+              <label>Date</label>
               <select
-                id="dateSelect"
                 className="date-select"
                 value={dateIndex}
-                onChange={e => setDateIndex(Number(e.target.value))}
+                onChange={(e) => setDateIndex(Number(e.target.value))}
               >
                 {dateData.map((item, idx) => (
                   <option key={item.date} value={idx}>
@@ -205,9 +215,10 @@ export default function SubjectPairing() {
                   </option>
                 ))}
               </select>
-              {current.time ? (
+
+              {current.time && (
                 <span className="date-time">Time: {current.time}</span>
-              ) : null}
+              )}
             </div>
 
             <span className="date-meta">
@@ -215,13 +226,18 @@ export default function SubjectPairing() {
             </span>
 
             <button
-              onClick={() => setDateIndex(i => Math.min(i + 1, dateData.length - 1))}
+              onClick={() =>
+                setDateIndex((i) =>
+                  Math.min(i + 1, dateData.length - 1)
+                )
+              }
               disabled={dateIndex === dateData.length - 1}
             >
               Next &gt;
             </button>
           </div>
 
+          {/* PAIRS TABLE */}
           <table className="room-table">
             <thead>
               <tr>
@@ -229,29 +245,31 @@ export default function SubjectPairing() {
                 <th>Subject B</th>
               </tr>
             </thead>
-
             <tbody>
               {current.pairs.map((pair, idx) => (
                 <tr key={idx}>
                   <td>
                     <select
                       value={pair.left.code}
-                      onChange={e => swapSubjects(idx, "left", e.target.value)}
+                      onChange={(e) =>
+                        swapSubjects(idx, "left", e.target.value)
+                      }
                     >
-                      {current.subjects.map(s => (
+                      {current.subjects.map((s) => (
                         <option key={s.code} value={s.code}>
                           {s.name}
                         </option>
                       ))}
                     </select>
                   </td>
-
                   <td>
                     <select
                       value={pair.right.code}
-                      onChange={e => swapSubjects(idx, "right", e.target.value)}
+                      onChange={(e) =>
+                        swapSubjects(idx, "right", e.target.value)
+                      }
                     >
-                      {current.subjects.map(s => (
+                      {current.subjects.map((s) => (
                         <option key={s.code} value={s.code}>
                           {s.name}
                         </option>
@@ -263,23 +281,29 @@ export default function SubjectPairing() {
             </tbody>
           </table>
 
+          {/* ACTIONS */}
           <div className="room-actions">
-            <button className="action-btn blue" onClick={saveAndReturn}>
-              Save Pairing & Return
+            <button
+              className="action-btn blue"
+              onClick={saveAndReallocate}
+              disabled={loading}
+            >
+              {loading ? "Reallocating..." : "Save Pairing & Reallocate"}
             </button>
           </div>
-
         </div>
       </main>
     </div>
   );
 }
 
+/* ================= HELPERS ================= */
+
 const normalizeSubjects = (list = []) => {
   const seen = new Set();
   const output = [];
 
-  list.forEach(subject => {
+  list.forEach((subject) => {
     if (!subject || seen.has(subject)) return;
     seen.add(subject);
     output.push({ code: subject, name: subject });
@@ -289,24 +313,39 @@ const normalizeSubjects = (list = []) => {
 };
 
 const getSubjectsForDate = (result, allocationRequest) => {
-  const fromRequest = allocationRequest?.datesheet?.[result.date];
+  const fromRequest =
+    allocationRequest?.datesheet?.[result.date];
+
   if (Array.isArray(fromRequest) && fromRequest.length) {
     return normalizeSubjects(fromRequest);
   }
 
   const subjects = [];
-  (result.response?.rooms || []).forEach(room => {
-    (room.subjectPair || []).forEach(subject => subjects.push(subject));
+  (result.response?.rooms || []).forEach((room) => {
+    (room.subjectPair || []).forEach((s) => subjects.push(s));
   });
 
   return normalizeSubjects(subjects);
 };
 
 const buildPairs = (subjects) => {
+  // single-subject UI support
+  if (subjects.length === 1) {
+    return [
+      {
+        left: subjects[0],
+        right: subjects[0],
+      },
+    ];
+  }
+
   const pairs = [];
   for (let i = 0; i < subjects.length; i += 2) {
     if (!subjects[i + 1]) break;
-    pairs.push({ left: subjects[i], right: subjects[i + 1] });
+    pairs.push({
+      left: subjects[i],
+      right: subjects[i + 1],
+    });
   }
   return pairs;
 };

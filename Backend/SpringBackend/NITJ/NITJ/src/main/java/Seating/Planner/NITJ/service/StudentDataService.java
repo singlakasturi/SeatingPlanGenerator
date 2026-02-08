@@ -33,12 +33,10 @@ public class StudentDataService {
     public Map<String, Queue<String>> getStudentData(List<String> subjects) {
 
         if (mockMode) {
-            System.out.println("⚠ MOCK MODE ENABLED → Generating fake students.");
             return generateMockData(subjects);
         }
 
         if (cachedExcelData == null) {
-            System.out.println("📘 Loading REAL student data from Excel: " + excelPath);
             cachedExcelData = readExcelData();
         }
 
@@ -89,7 +87,6 @@ public class StudentDataService {
             }
 
             workbook.close();
-            System.out.println("✅ Loaded " + data.size() + " subjects from Excel.");
 
         } catch (Exception e) {
             e.printStackTrace();

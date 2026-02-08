@@ -26,8 +26,11 @@ export default function SubmitDetails() {
   const updateYears = (p) => {
     let years = [];
     if (p === "btech") years = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
-    else if (["mtech", "msc", "mba"].includes(p)) years = ["1st Year", "2nd Year"];
-    else if (p === "phd") years = ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year"];
+    else if (["mtech", "msc", "mba"].includes(p))
+      years = ["1st Year", "2nd Year"];
+    else if (p === "phd")
+      years = ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year"];
+
     setYearOptions(years);
     setYearDisabled(!years.length);
   };
@@ -41,7 +44,9 @@ export default function SubmitDetails() {
   /* ================= LOGOUT ================= */
   const handleLogout = (e) => {
     e.preventDefault();
-    if (window.confirm("Are you sure you want to log out?")) navigate("/");
+    if (window.confirm("Are you sure you want to log out?")) {
+      navigate("/");
+    }
   };
 
   /* ================= DATE SHEET ================= */
@@ -77,18 +82,24 @@ export default function SubmitDetails() {
           if (row[i]) subjects.push(row[i].toString().split(/\s|\n/)[0]);
         }
 
-        if (subjects.length) parsed[date] = [...new Set(subjects)];
+        if (subjects.length) {
+          parsed[date] = [...new Set(subjects)];
+        }
       }
 
       setDatesheet(parsed);
     };
+
     reader.readAsBinaryString(file);
   };
 
   /* ================= SUBMIT ================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!datesheet) return alert("Please upload datesheet");
+    if (!datesheet) {
+      alert("Please upload datesheet");
+      return;
+    }
 
     const payload = {
       programme,
@@ -101,28 +112,36 @@ export default function SubmitDetails() {
     };
 
     try {
+      // 🔑 Store request for later reallocation
       sessionStorage.setItem("allocationRequest", JSON.stringify(payload));
 
-      const res = await axios.post("http://localhost:5000/allocate", payload, {
-        withCredentials: true,
-      });
+      const res = await axios.post(
+        "http://localhost:5000/allocate",
+        payload,
+        { withCredentials: true }
+      );
 
+      // 🔑 Store allocation result
       sessionStorage.setItem("allocationPayload", JSON.stringify(res.data));
+      sessionStorage.setItem("hasAllocated", "true");
+
       navigate("/room-allocation", { state: res.data });
     } catch (err) {
-  alert(
-    err.response?.data?.error ||
-    "Seat allocation failed. Please check room availability."
-  );
-}
+      alert(
+        err.response?.data?.error ||
+          "Seat allocation failed. Please check room availability."
+      );
+    }
   };
 
   return (
     <div>
+      {/* HEADER */}
       <header className="header">
         <img src="/nitjlogo.png" alt="NITJ Logo" />
       </header>
 
+      {/* NAVBAR */}
       <div className="nav-bar">
         <div className="nav-left">
           <img src="/seating planner logo.png" alt="" />
@@ -130,10 +149,13 @@ export default function SubmitDetails() {
         </div>
         <div className="nav-right">
           <a href="#contact">CONTACT US</a>
-          <a href="#" onClick={handleLogout}>LOG OUT</a>
+          <a href="#" onClick={handleLogout}>
+            LOG OUT
+          </a>
         </div>
       </div>
 
+      {/* MAIN */}
       <main className="submit-container">
         <section className="submit-card">
           <h2>PROVIDE EXAM DETAILS</h2>
@@ -141,7 +163,12 @@ export default function SubmitDetails() {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Programme</label>
-              <select className="form-control" value={programme} onChange={handleProgrammeChange} required>
+              <select
+                className="form-control"
+                value={programme}
+                onChange={handleProgrammeChange}
+                required
+              >
                 <option value="">-- Select Programme --</option>
                 <option value="btech">B.Tech</option>
                 <option value="mtech">M.Tech</option>
@@ -153,29 +180,65 @@ export default function SubmitDetails() {
 
             <div className="form-group">
               <label>Year</label>
-              <select className="form-control" disabled={yearDisabled} value={year} onChange={(e) => setYear(e.target.value)} required>
+              <select
+                className="form-control"
+                disabled={yearDisabled}
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                required
+              >
                 <option value="">-- Select Year --</option>
-                {yearOptions.map(y => <option key={y}>{y}</option>)}
+                {yearOptions.map((y) => (
+                  <option key={y}>{y}</option>
+                ))}
               </select>
             </div>
 
             <div className="form-group">
               <label>Exam Time</label>
               <div style={{ display: "flex", gap: 10 }}>
-                <input className="form-control" style={{ width: "30%" }} value={startTime} onChange={e => setStartTime(e.target.value)} required />
-                <select className="form-control" style={{ width: "20%" }} value={startPeriod} onChange={e => setStartPeriod(e.target.value)}>
-                  <option>AM</option><option>PM</option>
+                <input
+                  className="form-control"
+                  style={{ width: "30%" }}
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  required
+                />
+                <select
+                  className="form-control"
+                  style={{ width: "20%" }}
+                  value={startPeriod}
+                  onChange={(e) => setStartPeriod(e.target.value)}
+                >
+                  <option>AM</option>
+                  <option>PM</option>
                 </select>
-                <input className="form-control" style={{ width: "30%" }} value={endTime} onChange={e => setEndTime(e.target.value)} required />
-                <select className="form-control" style={{ width: "20%" }} value={endPeriod} onChange={e => setEndPeriod(e.target.value)}>
-                  <option>AM</option><option>PM</option>
+                <input
+                  className="form-control"
+                  style={{ width: "30%" }}
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  required
+                />
+                <select
+                  className="form-control"
+                  style={{ width: "20%" }}
+                  value={endPeriod}
+                  onChange={(e) => setEndPeriod(e.target.value)}
+                >
+                  <option>AM</option>
+                  <option>PM</option>
                 </select>
               </div>
             </div>
 
             <div className="form-group">
               <label>Rooms</label>
-              <select className="form-control" value={roomSelection} onChange={e => setRoomSelection(e.target.value)}>
+              <select
+                className="form-control"
+                value={roomSelection}
+                onChange={(e) => setRoomSelection(e.target.value)}
+              >
                 <option value="all">All Rooms</option>
                 <option value="include">Include Rooms</option>
                 <option value="exclude">Exclude Rooms</option>
@@ -185,20 +248,33 @@ export default function SubmitDetails() {
             {roomSelection === "include" && (
               <div className="form-group">
                 <label>Include Rooms</label>
-                <input className="form-control" value={includeRooms} onChange={e => setIncludeRooms(e.target.value)} />
+                <input
+                  className="form-control"
+                  value={includeRooms}
+                  onChange={(e) => setIncludeRooms(e.target.value)}
+                />
               </div>
             )}
 
             {roomSelection === "exclude" && (
               <div className="form-group">
                 <label>Exclude Rooms</label>
-                <input className="form-control" value={excludeRooms} onChange={e => setExcludeRooms(e.target.value)} />
+                <input
+                  className="form-control"
+                  value={excludeRooms}
+                  onChange={(e) => setExcludeRooms(e.target.value)}
+                />
               </div>
             )}
 
             <div className="form-group">
               <label>Upload Datesheet</label>
-              <input type="file" className="form-control" accept=".xlsx,.xls" onChange={handleFileUpload} />
+              <input
+                type="file"
+                className="form-control"
+                accept=".xlsx,.xls"
+                onChange={handleFileUpload}
+              />
             </div>
 
             <button className="btn-login">Submit</button>

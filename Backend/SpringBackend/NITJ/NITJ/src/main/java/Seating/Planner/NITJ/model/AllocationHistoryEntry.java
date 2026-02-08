@@ -1,20 +1,40 @@
 package Seating.Planner.NITJ.model;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 public class AllocationHistoryEntry {
 
     private int index;
-    private String timestamp;
+
+    // 🔑 links history → bookings
+    private String allocationId;
+
+    private String date;
+    private String timeSlot;
+
+    private LocalDateTime createdAt;
+
+    // optional: whatever you want to show in UI
     private Map<String, Object> payload;
 
     public AllocationHistoryEntry() {}
 
-    public AllocationHistoryEntry(int index, String timestamp, Map<String, Object> payload) {
+    public AllocationHistoryEntry(int index,
+                                  String allocationId,
+                                  String date,
+                                  String timeSlot,
+                                  Map<String, Object> payload) {
+
         this.index = index;
-        this.timestamp = timestamp;
+        this.allocationId = allocationId;
+        this.date = date;
+        this.timeSlot = timeSlot;
         this.payload = payload;
+        this.createdAt = LocalDateTime.now();
     }
+
+    // ---------------- Getters / Setters ----------------
 
     public int getIndex() {
         return index;
@@ -24,12 +44,32 @@ public class AllocationHistoryEntry {
         this.index = index;
     }
 
-    public String getTimestamp() {
-        return timestamp;
+    public String getAllocationId() {
+        return allocationId;
     }
 
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
+    public void setAllocationId(String allocationId) {
+        this.allocationId = allocationId;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getTimeSlot() {
+        return timeSlot;
+    }
+
+    public void setTimeSlot(String timeSlot) {
+        this.timeSlot = timeSlot;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public Map<String, Object> getPayload() {
