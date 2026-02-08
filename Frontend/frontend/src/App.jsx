@@ -9,6 +9,7 @@ import RoomAllocation from "./pages/RoomAllocation";
 import PreviewRoom from "./pages/PreviewRoom";
 import EditRoom from "./pages/EditRoom";
 import SubjectPairing from "./pages/SubjectPairing";
+import PreviousPlans from "./pages/PreviousPlans";
 
 function ProtectedRoute({ loggedIn, loading, children }) {
   if (loading) return null;
@@ -57,6 +58,15 @@ function App() {
           element={
             <ProtectedRoute loggedIn={loggedIn} loading={loading}>
               <SubmitDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/previous-plans"
+          element={
+            <ProtectedRoute loggedIn={loggedIn} loading={loading}>
+              <PreviousPlans />
             </ProtectedRoute>
           }
         />

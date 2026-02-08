@@ -1,0 +1,186 @@
+.previous-plans-main {
+  padding: 40px 60px;
+  min-height: calc(100vh - 250px);
+  background-color: #f5f7fa;
+}
+
+.plans-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.plans-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.plans-header h2 {
+  font-size: 28px;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.back-btn {
+  padding: 10px 20px;
+  background-color: #fff;
+  border: 2px solid #0066cc;
+  color: #0066cc;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: #0066cc;
+  color: white;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px;
+  font-size: 18px;
+  color: #666;
+}
+
+.no-plans {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.no-plans p {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.no-plans button {
+  padding: 12px 30px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.no-plans button:hover {
+  background-color: #0052a3;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.plan-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.plan-card-header {
+  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+  color: white;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan-index {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.plan-timestamp {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.plan-card-body {
+  padding: 20px;
+}
+
+.plan-info {
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #333;
+}
+
+.plan-info strong {
+  color: #0066cc;
+  margin-right: 8px;
+}
+
+.plan-card-actions {
+  padding: 16px 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 12px;
+}
+
+.view-btn,
+.delete-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-btn {
+  background-color: #0066cc;
+  color: white;
+}
+
+.view-btn:hover {
+  background-color: #0052a3;
+}
+
+.delete-btn {
+  background-color: #fff;
+  color: #dc3545;
+  border: 2px solid #dc3545;
+}
+
+.delete-btn:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .previous-plans-main {
+    padding: 20px;
+  }
+
+  .plans-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+}

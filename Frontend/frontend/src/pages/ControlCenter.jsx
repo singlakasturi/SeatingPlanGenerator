@@ -20,6 +20,10 @@ export default function ControlCenter() {
     navigate("/room-allocation");
   };
 
+  const handlePreviousPlansClick = () => {
+    navigate("/previous-plans");
+  };
+
   // ✅ ONLY NEW LOGIC (NO UI CHANGE)
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -88,7 +92,7 @@ export default function ControlCenter() {
             <h2>Seating Plan Control Center</h2>
             <p>
               Welcome! From here you can generate a new seating arrangement,
-              or view plans you’ve created in the past.
+              or view plans you've created in the past.
             </p>
           </div>
 
@@ -99,6 +103,16 @@ export default function ControlCenter() {
                 <div className="option-title">Generate Seating Plan</div>
                 <div className="option-desc">
                   Create a new arrangement for upcoming exams
+                </div>
+              </div>
+            </button>
+
+            <button className="option-item" onClick={handlePreviousPlansClick}>
+              <span className="option-icon">📋</span>
+              <div className="option-content">
+                <div className="option-title">View Previous Plans</div>
+                <div className="option-desc">
+                  Access and manage previously generated seating arrangements
                 </div>
               </div>
             </button>
