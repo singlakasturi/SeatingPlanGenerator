@@ -327,35 +327,6 @@ app.post("/api/download/pdf", async(req, res) => {
     }
 });
 
-// ---------- EXCEL ZIP ----------
-app.post("/api/download/excel", async(req, res) => {
-    try {
-        const springRes = await axios.post(
-            "http://localhost:8081/api/export/excel", { results: req.body.results }, { maxBodyLength: Infinity, maxContentLength: Infinity }
-        );
-
-        res.setHeader("Content-Type", "application/zip");
-        res.setHeader("Content-Disposition", "attachment; filename=room_excels.zip");
-
-        const archive = archiver("zip", { zlib: { level: 9 } });
-        archive.pipe(res);
-
-        springRes.data.forEach(file => {
-            if (!file.fileName || !file.fileData) return;
-
-            archive.append(
-                Buffer.from(file.fileData, "base64"), { name: file.fileName }
-            );
-        });
-
-        await archive.finalize();
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Excel download failed" });
-    }
-});
-
 app.get("/", (req, res) => res.send("Backend running 🚀"));
 
 app.listen(5000, () => console.log("🚀 Server running at http://localhost:5000"));
