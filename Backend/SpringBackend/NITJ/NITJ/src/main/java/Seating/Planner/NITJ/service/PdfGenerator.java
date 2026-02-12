@@ -1,91 +1,28 @@
-// package Seating.Planner.NITJ.service;
-
-// import Seating.Planner.NITJ.model.RoomAllocation;
-// import Seating.Planner.NITJ.model.SeatAssignment;
-
-// import com.lowagie.text.*;
-// import com.lowagie.text.pdf.*;
-
-// import java.io.ByteArrayOutputStream;
-
-// public class PdfGenerator {
-
-//     public static byte[] generate(RoomAllocation room) {
-//         try {
-//             Document doc = new Document(PageSize.A4);
-//             ByteArrayOutputStream out = new ByteArrayOutputStream();
-//             PdfWriter.getInstance(doc, out);
-//             doc.open();
-
-//             // Header
-//             doc.add(new Paragraph(
-//                 "DR B R AMBEDKAR NATIONAL INSTITUTE OF TECHNOLOGY, JALANDHAR",
-//                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)
-//             ));
-//             doc.add(new Paragraph("Room No: " + room.getRoomCode()));
-//             doc.add(new Paragraph(" "));
-
-//             // Blackboard
-//             Paragraph board = new Paragraph(
-//                 "BLACK BOARD",
-//                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)
-//             );
-//             board.setAlignment(Element.ALIGN_CENTER);
-//             doc.add(board);
-//             doc.add(new Paragraph(" "));
-
-//             // Seat table (3 columns like PreviewRoom: L C R)
-//             PdfPTable table = new PdfPTable(3);
-//             table.setWidthPercentage(100);
-
-//             for (SeatAssignment s : room.getAllocations()) {
-//                 String text =
-//                         s.getSeatId() + "\n" +
-//                         (s.getRollNo() == null ? "Vacant" : s.getRollNo());
-
-//                 PdfPCell cell = new PdfPCell(new Phrase(text));
-//                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-//                 cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-//                 cell.setFixedHeight(28f);
-
-//                 table.addCell(cell);
-//             }
-
-//             doc.add(table);
-//             doc.close();
-//             return out.toByteArray();
-
-//         } catch (Exception e) {
-//             throw new RuntimeException("PDF generation failed", e);
-//         }
-//     }
-// }
-
 package Seating.Planner.NITJ.service;
 
+import Seating.Planner.NITJ.model.Room;
 import Seating.Planner.NITJ.model.RoomAllocation;
 import Seating.Planner.NITJ.model.SeatAssignment;
+
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.geom.PageSize;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.*;
+import com.itextpdf.kernel.utils.PdfMerger;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.borders.Border;
-import com.itextpdf.layout.borders.SolidBorder;
+import com.itextpdf.layout.borders.*;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.properties.TextAlignment;
-import com.itextpdf.layout.properties.UnitValue;
-import com.itextpdf.layout.properties.VerticalAlignment;
-import com.itextpdf.kernel.utils.PdfMerger;
-import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.layout.properties.*;
+
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 
 public class PdfGenerator {
 
+    /* ================= MERGE ================= */
 
     public static byte[] merge(List<byte[]> pdfs) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -94,7 +31,9 @@ public class PdfGenerator {
             PdfMerger merger = new PdfMerger(mergedPdf);
 
             for (byte[] pdfBytes : pdfs) {
-                PdfDocument src = new PdfDocument(new PdfReader(new java.io.ByteArrayInputStream(pdfBytes)));
+                PdfDocument src = new PdfDocument(
+                        new PdfReader(new ByteArrayInputStream(pdfBytes))
+                );
                 merger.merge(src, 1, src.getNumberOfPages());
                 src.close();
             }
@@ -108,33 +47,32 @@ public class PdfGenerator {
         }
     }
 
+    /* ================= GENERATE ================= */
 
     public static byte[] generate(RoomAllocation room) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            PdfWriter writer = new PdfWriter(baos);
-            PdfDocument pdf = new PdfDocument(writer);
-            Document document = new Document(pdf, PageSize.A4.rotate()); // LANDSCAPE
+
+            PdfDocument pdf = new PdfDocument(new PdfWriter(baos));
+            Document document = new Document(pdf, PageSize.A4.rotate());
             document.setMargins(20, 20, 20, 20);
 
-            // ✅ HEADER
             addHeader(document, room);
-
-            // ✅ BLACK BOARD
             addBlackBoard(document);
 
-            // ✅ SEATING LAYOUT
-            if ("LT".equals(room.getType())) {
-                addLTLayout(document, room);
-            } else if ("ALT".equals(room.getType())) {
-                addALTLayout(document, room);
-            } else {
-                addStandardLayout(document, room);
+            Room.RoomType type = room.getType();
+
+            switch (type) {
+                case LT:
+                    addLTLayout(document, room);
+                    break;
+                case ALT:
+                    addALTLayout(document, room);
+                    break;
+                default:
+                    addLTLayout(document, room);
             }
 
-            // ✅ WALL
             addWall(document);
-
-            // ✅ TOTALS
             addTotals(document, room);
 
             document.close();
@@ -146,38 +84,41 @@ public class PdfGenerator {
         }
     }
 
+    /* ================= HEADER ================= */
+
     private static void addHeader(Document doc, RoomAllocation room) {
-        Paragraph title = new Paragraph("DR BR AMBEDKAR NATIONAL INSTITUTE OF TECHNOLOGY, JALANDHAR")
+
+        doc.add(new Paragraph(
+                "DR BR AMBEDKAR NATIONAL INSTITUTE OF TECHNOLOGY, JALANDHAR")
                 .setFontSize(10)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setBold();
-        doc.add(title);
+                .setBold());
 
-        Paragraph examSection = new Paragraph("EXAMINATION SECTION")
+        doc.add(new Paragraph("EXAMINATION SECTION")
                 .setFontSize(14)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setBold();
-        doc.add(examSection);
+                .setBold());
 
-        Paragraph seatingPlan = new Paragraph("Seating Plan End Semester Examinations December 2025")
+        doc.add(new Paragraph(
+                "Seating Plan End Semester Examinations December 2025")
                 .setFontSize(11)
-                .setTextAlignment(TextAlignment.CENTER);
-        doc.add(seatingPlan);
+                .setTextAlignment(TextAlignment.CENTER));
 
-        Paragraph roomInfo = new Paragraph("ROOM NO.: " + room.getRoomCode() + " | BTECH 1st Year Semester (2024 Batch)")
+        doc.add(new Paragraph("ROOM NO.: " + room.getRoomCode())
                 .setFontSize(10)
                 .setTextAlignment(TextAlignment.CENTER)
                 .setBold()
                 .setMarginTop(10)
-                .setMarginBottom(10);
-        doc.add(roomInfo);
+                .setMarginBottom(10));
     }
 
-    private static void addBlackBoard(Document doc) {
-        Table blackBoard = new Table(1);
-        blackBoard.setWidth(UnitValue.createPercentValue(100));
+    /* ================= BLACK BOARD ================= */
 
-        Cell cell = new Cell()
+    private static void addBlackBoard(Document doc) {
+        Table table = new Table(1);
+        table.setWidth(UnitValue.createPercentValue(100));
+
+        table.addCell(new Cell()
                 .add(new Paragraph("BLACK BOARD")
                         .setFontSize(12)
                         .setBold()
@@ -185,218 +126,220 @@ public class PdfGenerator {
                 .setBackgroundColor(new DeviceRgb(15, 23, 42))
                 .setTextAlignment(TextAlignment.CENTER)
                 .setPadding(8)
-                .setBorder(Border.NO_BORDER);
+                .setBorder(Border.NO_BORDER));
 
-        blackBoard.addCell(cell);
-        doc.add(blackBoard);
+        doc.add(table);
     }
 
-    private static void addWall(Document doc) {
-        Table wall = new Table(1);
-        wall.setWidth(UnitValue.createPercentValue(100));
-        wall.setMarginTop(5);
-
-        Cell cell = new Cell()
-                .add(new Paragraph("WALL")
-                        .setFontSize(10)
-                        .setBold())
-                .setBackgroundColor(new DeviceRgb(241, 245, 249))
-                .setTextAlignment(TextAlignment.CENTER)
-                .setPadding(5)
-                .setBorder(new SolidBorder(new DeviceRgb(203, 213, 225), 1));
-
-        wall.addCell(cell);
-        doc.add(wall);
-    }
+    /* ================= TOTALS ================= */
 
     private static void addTotals(Document doc, RoomAllocation room) {
+
         Map<String, Integer> counts = new HashMap<>();
         for (SeatAssignment seat : room.getAllocations()) {
             counts.merge(seat.getSubjectCode(), 1, Integer::sum);
         }
 
-        StringBuilder totalsText = new StringBuilder();
+        StringBuilder text = new StringBuilder();
         int idx = 0;
+
         for (String subject : room.getSubjectPair()) {
             String tag = subject.split("_")[0].toUpperCase();
-            if (idx > 0) totalsText.append(" & ");
-            totalsText.append(tag).append("-").append(counts.getOrDefault(subject, 0));
-            idx++;
+            if (idx++ > 0) text.append(" & ");
+            text.append(tag).append("-")
+                    .append(counts.getOrDefault(subject, 0));
         }
-        totalsText.append(", TOTAL = ").append(room.getAllocations().size());
 
-        Paragraph totals = new Paragraph(totalsText.toString())
+        text.append(", TOTAL = ")
+                .append(room.getAllocations().size());
+
+        doc.add(new Paragraph(text.toString())
                 .setFontSize(10)
                 .setTextAlignment(TextAlignment.CENTER)
                 .setBold()
-                .setMarginTop(10);
-        doc.add(totals);
+                .setMarginTop(10));
     }
 
+    /* ================= LT LAYOUT ================= */
+
     private static void addLTLayout(Document doc, RoomAllocation room) {
-        // ✅ PARSE SEATS INTO LEFT/RIGHT MATRIX
-        Map<String, SeatAssignment> seatMap = new HashMap<>();
-        int maxRow = 0, maxCol = 0;
 
-        for (SeatAssignment seat : room.getAllocations()) {
-            seatMap.put(seat.getSeatId(), seat);
-            String[] parts = seat.getSeatId().split("-");
-            if (parts.length == 2) {
-                int row = Integer.parseInt(parts[0].substring(1));
-                int col = Integer.parseInt(parts[1]);
-                maxRow = Math.max(maxRow, row);
-                maxCol = Math.max(maxCol, col);
-            }
-        }
+        SectionData data = extractSectionData(room);
 
-        // ✅ CREATE MAIN TABLE (LEFT SIDE | AISLE | RIGHT SIDE)
         Table mainTable = new Table(new float[]{45, 10, 45});
         mainTable.setWidth(UnitValue.createPercentValue(100));
         mainTable.setMarginTop(10);
 
-        // ✅ LEFT SIDE TITLE
-        Cell leftTitle = new Cell()
-                .add(new Paragraph("LEFT SIDE COLUMNS").setFontSize(9).setBold())
-                .setTextAlignment(TextAlignment.CENTER)
-                .setBackgroundColor(new DeviceRgb(241, 245, 249))
-                .setPadding(5);
-        mainTable.addCell(leftTitle);
+        mainTable.addCell(createSectionHeader("LEFT SIDE COLUMNS"));
 
-        // ✅ AISLE CELL (SPANS ALL ROWS)
-        Cell aisleCell = new Cell(maxRow + 2, 1)
-                .add(new Paragraph("AISLE").setFontSize(9).setBold().setRotationAngle(Math.PI / 2))
+        mainTable.addCell(new Cell(data.maxRow + 2, 1)
+                .add(new Paragraph("AISLE")
+                        .setFontSize(9)
+                        .setBold()
+                        .setRotationAngle(Math.PI / 2))
                 .setTextAlignment(TextAlignment.CENTER)
                 .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                .setBackgroundColor(new DeviceRgb(241, 245, 249))
-                .setBorder(new SolidBorder(new DeviceRgb(226, 232, 240), 1));
-        mainTable.addCell(aisleCell);
+                .setBackgroundColor(new DeviceRgb(241, 245, 249)));
 
-        // ✅ RIGHT SIDE TITLE
-        Cell rightTitle = new Cell()
-                .add(new Paragraph("RIGHT SIDE COLUMNS").setFontSize(9).setBold())
-                .setTextAlignment(TextAlignment.CENTER)
-                .setBackgroundColor(new DeviceRgb(241, 245, 249))
-                .setPadding(5);
-        mainTable.addCell(rightTitle);
+        mainTable.addCell(createSectionHeader("RIGHT SIDE COLUMNS"));
 
-        // ✅ HEADER ROW (COLUMN NUMBERS & SUBJECTS)
-        Table leftHeader = createHeaderTable(maxCol, room.getSubjectPair());
-        Table rightHeader = createHeaderTable(maxCol, room.getSubjectPair());
+        mainTable.addCell(
+                new Cell().add(createHeaderTable(data.leftCols, room.getSubjectPair()))
+                        .setBorder(Border.NO_BORDER));
 
-        mainTable.addCell(new Cell().add(leftHeader).setBorder(Border.NO_BORDER));
-        mainTable.addCell(new Cell().add(rightHeader).setBorder(Border.NO_BORDER));
+        mainTable.addCell(
+                new Cell().add(createHeaderTable(data.rightCols, room.getSubjectPair()))
+                        .setBorder(Border.NO_BORDER));
 
-        // ✅ DATA ROWS
-        for (int row = 1; row <= maxRow; row++) {
-            Table leftRow = createDataRow(row, maxCol, "L", seatMap);
-            Table rightRow = createDataRow(row, maxCol, "R", seatMap);
+        for (int row = 1; row <= data.maxRow; row++) {
 
-            mainTable.addCell(new Cell().add(leftRow).setBorder(Border.NO_BORDER));
-            mainTable.addCell(new Cell().add(rightRow).setBorder(Border.NO_BORDER));
+            mainTable.addCell(
+                    new Cell().add(createDataRow(row, data.leftCols, "L", data.seatMap))
+                            .setBorder(Border.NO_BORDER));
+
+            mainTable.addCell(
+                    new Cell().add(createDataRow(row, data.rightCols, "R", data.seatMap))
+                            .setBorder(Border.NO_BORDER));
         }
 
         doc.add(mainTable);
     }
 
-    private static Table createHeaderTable(int maxCol, List<String> subjectPair) {
-        Table header = new Table(maxCol);
-        header.setWidth(UnitValue.createPercentValue(100));
+    /* ================= ALT LAYOUT ================= */
 
-        // ✅ ROW 1: COLUMN NUMBERS
-        for (int col = 1; col <= maxCol; col++) {
-            Cell cell = new Cell()
-                    .add(new Paragraph(String.valueOf(col)).setFontSize(7))
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setBackgroundColor(new DeviceRgb(241, 245, 249))
-                    .setPadding(3)
-                    .setBorder(new SolidBorder(new DeviceRgb(148, 163, 184), 1));
-            header.addCell(cell);
+    private static void addALTLayout(Document doc, RoomAllocation room) {
+
+        SectionData data = extractSectionData(room);
+
+        Table mainTable = new Table(new float[]{34, 3, 33, 3, 30});
+        mainTable.setWidth(UnitValue.createPercentValue(100));
+        mainTable.setMarginTop(10);
+
+        mainTable.addCell(createSectionHeader("LEFT SIDE"));
+        mainTable.addCell(createEmptyCell());
+        mainTable.addCell(createSectionHeader("CENTRE"));
+        mainTable.addCell(createEmptyCell());
+        mainTable.addCell(createSectionHeader("RIGHT SIDE"));
+
+        mainTable.addCell(new Cell().add(createHeaderTable(data.leftCols, room.getSubjectPair())).setBorder(Border.NO_BORDER));
+        mainTable.addCell(createEmptyCell());
+        mainTable.addCell(new Cell().add(createHeaderTable(data.centreCols, room.getSubjectPair())).setBorder(Border.NO_BORDER));
+        mainTable.addCell(createEmptyCell());
+        mainTable.addCell(new Cell().add(createHeaderTable(data.rightCols, room.getSubjectPair())).setBorder(Border.NO_BORDER));
+
+        for (int row = 1; row <= data.maxRow; row++) {
+
+            mainTable.addCell(new Cell().add(createDataRow(row, data.leftCols, "L", data.seatMap)).setBorder(Border.NO_BORDER));
+            mainTable.addCell(createEmptyCell());
+
+            mainTable.addCell(new Cell().add(createDataRow(row, data.centreCols, "C", data.seatMap)).setBorder(Border.NO_BORDER));
+            mainTable.addCell(createEmptyCell());
+
+            mainTable.addCell(new Cell().add(createDataRow(row, data.rightCols, "R", data.seatMap)).setBorder(Border.NO_BORDER));
         }
 
-        // ✅ ROW 2: SUBJECT TAGS
-        for (int col = 1; col <= maxCol; col++) {
-            String subject = subjectPair.get((col - 1) % subjectPair.size()).split("_")[0].toUpperCase();
-            Cell cell = new Cell()
+        doc.add(mainTable);
+    }
+
+    /* ================= DATA EXTRACTION ================= */
+
+    private static class SectionData {
+        Map<String, SeatAssignment> seatMap = new HashMap<>();
+        int maxRow = 0;
+        int leftCols = 0;
+        int centreCols = 0;
+        int rightCols = 0;
+    }
+
+    private static SectionData extractSectionData(RoomAllocation room) {
+
+        SectionData data = new SectionData();
+
+        for (SeatAssignment seat : room.getAllocations()) {
+
+            data.seatMap.put(seat.getSeatId(), seat);
+
+            String[] parts = seat.getSeatId().split("-");
+            if (parts.length == 2) {
+
+                int row = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                int col = Integer.parseInt(parts[1]);
+
+                data.maxRow = Math.max(data.maxRow, row);
+
+                if (seat.getSeatId().startsWith("L"))
+                    data.leftCols = Math.max(data.leftCols, col);
+
+                else if (seat.getSeatId().startsWith("C"))
+                    data.centreCols = Math.max(data.centreCols, col);
+
+                else if (seat.getSeatId().startsWith("R"))
+                    data.rightCols = Math.max(data.rightCols, col);
+            }
+        }
+
+        return data;
+    }
+
+    /* ================= HELPERS ================= */
+
+    private static Table createHeaderTable(int cols, List<String> subjectPair) {
+
+        if (cols <= 0) cols = 1;   // prevent crash
+
+        Table header = new Table(cols);
+        header.setWidth(UnitValue.createPercentValue(100));
+
+        for (int col = 1; col <= cols; col++) {
+            header.addCell(new Cell()
+                    .add(new Paragraph(String.valueOf(col)).setFontSize(7))
+                    .setTextAlignment(TextAlignment.CENTER));
+        }
+
+        for (int col = 1; col <= cols; col++) {
+
+            String subject = subjectPair.get((col - 1) % subjectPair.size())
+                    .split("_")[0].toUpperCase();
+
+            header.addCell(new Cell()
                     .add(new Paragraph(subject).setFontSize(8).setBold())
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setBackgroundColor(ColorConstants.WHITE)
-                    .setPadding(3)
-                    .setBorder(new SolidBorder(new DeviceRgb(148, 163, 184), 1));
-            header.addCell(cell);
+                    .setTextAlignment(TextAlignment.CENTER));
         }
 
         return header;
     }
 
-    private static Table createDataRow(int row, int maxCol, String side, Map<String, SeatAssignment> seatMap) {
-        Table rowTable = new Table(maxCol);
-        rowTable.setWidth(UnitValue.createPercentValue(100));
+    private static Table createDataRow(int row, int cols,
+                                       String side,
+                                       Map<String, SeatAssignment> seatMap) {
 
-        for (int col = 1; col <= maxCol; col++) {
+        if (cols <= 0) cols = 1;
+        Table table = new Table(cols);
+        table.setWidth(UnitValue.createPercentValue(100));
+
+        for (int col = 1; col <= cols; col++) {
+
             String seatId = side + row + "-" + col;
             SeatAssignment seat = seatMap.get(seatId);
 
-            Cell cell = new Cell().setPadding(4).setTextAlignment(TextAlignment.CENTER)
-                    .setBorder(new SolidBorder(new DeviceRgb(148, 163, 184), 1));
+            Cell cell = new Cell()
+                    .setPadding(4)
+                    .setTextAlignment(TextAlignment.CENTER);
 
             if (seat != null) {
-                String rollNo = seat.getRollNo().replaceAll("\\D", "");
-                cell.add(new Paragraph(rollNo).setFontSize(7));
-
-                if (seat.getNote() != null && !seat.getNote().trim().isEmpty()) {
-                    cell.add(new Paragraph(seat.getNote())
-                            .setFontSize(6)
-                            .setFontColor(new DeviceRgb(220, 38, 38))
-                            .setItalic()
-                            .setBold());
-                }
-                cell.setBackgroundColor(ColorConstants.WHITE);
+                cell.add(new Paragraph(
+                        seat.getRollNo().replaceAll("\\D", ""))
+                        .setFontSize(7));
             } else {
-                cell.add(new Paragraph("Vacant").setFontSize(7).setItalic())
-                        .setBackgroundColor(new DeviceRgb(248, 250, 252))
-                        .setFontColor(new DeviceRgb(203, 213, 225));
+                cell.add(new Paragraph("Vacant")
+                        .setFontSize(7)
+                        .setItalic());
             }
 
-            rowTable.addCell(cell);
+            table.addCell(cell);
         }
 
-        return rowTable;
-    }
-
-    private static void addALTLayout(Document doc, RoomAllocation room) {
-        // ✅ SIMILAR TO LT BUT WITH 3 SECTIONS (L, C, R)
-        // Parse seats into sections
-        Map<String, List<SeatAssignment>> sections = new HashMap<>();
-        sections.put("L", new ArrayList<>());
-        sections.put("C", new ArrayList<>());
-        sections.put("R", new ArrayList<>());
-
-        for (SeatAssignment seat : room.getAllocations()) {
-            String side = seat.getSeatId().substring(0, 1);
-            sections.computeIfAbsent(side, k -> new ArrayList<>()).add(seat);
-        }
-
-        // ✅ CREATE TABLE WITH 5 COLUMNS (L | AISLE | C | AISLE | R)
-        Table mainTable = new Table(new float[]{30, 5, 30, 5, 30});
-        mainTable.setWidth(UnitValue.createPercentValue(100));
-        mainTable.setMarginTop(10);
-
-        // ✅ HEADERS
-        mainTable.addCell(createSectionHeader("Left Side"));
-        mainTable.addCell(createAislePlaceholder());
-        mainTable.addCell(createSectionHeader("Centre"));
-        mainTable.addCell(createAislePlaceholder());
-        mainTable.addCell(createSectionHeader("Right Side"));
-
-        // ✅ ADD SECTION DATA
-        // (Implementation similar to LT but with 3 sections)
-
-        doc.add(mainTable);
-    }
-
-    private static void addStandardLayout(Document doc, RoomAllocation room) {
-        // ✅ SIMPLE 2-COLUMN LAYOUT
-        addLTLayout(doc, room); // Use same layout as LT
+        return table;
     }
 
     private static Cell createSectionHeader(String title) {
@@ -407,12 +350,21 @@ public class PdfGenerator {
                 .setPadding(5);
     }
 
-    private static Cell createAislePlaceholder() {
-        return new Cell()
-                .add(new Paragraph("AISLE").setFontSize(7).setBold().setRotationAngle(Math.PI / 2))
+    private static Cell createEmptyCell() {
+        return new Cell().setBorder(Border.NO_BORDER);
+    }
+
+    private static void addWall(Document doc) {
+        Table wall = new Table(1);
+        wall.setWidth(UnitValue.createPercentValue(100));
+        wall.setMarginTop(5);
+
+        wall.addCell(new Cell()
+                .add(new Paragraph("WALL").setFontSize(10).setBold())
+                .setBackgroundColor(new DeviceRgb(241, 245, 249))
                 .setTextAlignment(TextAlignment.CENTER)
-                .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                .setBackgroundColor(new DeviceRgb(238, 242, 246))
-                .setBorder(new SolidBorder(new DeviceRgb(203, 213, 225), 1));
+                .setPadding(5));
+
+        doc.add(wall);
     }
 }
