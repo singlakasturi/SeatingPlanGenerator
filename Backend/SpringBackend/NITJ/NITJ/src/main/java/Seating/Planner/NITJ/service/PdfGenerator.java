@@ -50,6 +50,7 @@ public class PdfGenerator {
     /* ================= GENERATE ================= */
 
     public static byte[] generate(RoomAllocation room) {
+
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
             PdfDocument pdf = new PdfDocument(new PdfWriter(baos));
@@ -59,18 +60,10 @@ public class PdfGenerator {
             addHeader(document, room);
             addBlackBoard(document);
 
-            Room.RoomType type = room.getType();
-
-            switch (type) {
-                case LT:
-                    addLTLayout(document, room);
-                    break;
-                case ALT:
-                    addALTLayout(document, room);
-                    break;
-                default:
-                    addLTLayout(document, room);
-            }
+            if (room.getType() == Room.RoomType.ALT)
+                addALTLayout(document, room);
+            else
+                addLTLayout(document, room);
 
             addWall(document);
             addTotals(document, room);
@@ -115,6 +108,7 @@ public class PdfGenerator {
     /* ================= BLACK BOARD ================= */
 
     private static void addBlackBoard(Document doc) {
+
         Table table = new Table(1);
         table.setWidth(UnitValue.createPercentValue(100));
 
@@ -136,17 +130,21 @@ public class PdfGenerator {
     private static void addTotals(Document doc, RoomAllocation room) {
 
         Map<String, Integer> counts = new HashMap<>();
-        for (SeatAssignment seat : room.getAllocations()) {
+
+        for (SeatAssignment seat : room.getAllocations())
             counts.merge(seat.getSubjectCode(), 1, Integer::sum);
-        }
 
         StringBuilder text = new StringBuilder();
         int idx = 0;
 
         for (String subject : room.getSubjectPair()) {
+
             String tag = subject.split("_")[0].toUpperCase();
+
             if (idx++ > 0) text.append(" & ");
-            text.append(tag).append("-")
+
+            text.append(tag)
+                    .append("-")
                     .append(counts.getOrDefault(subject, 0));
         }
 
@@ -183,23 +181,29 @@ public class PdfGenerator {
 
         mainTable.addCell(createSectionHeader("RIGHT SIDE COLUMNS"));
 
-        mainTable.addCell(
-                new Cell().add(createHeaderTable(data.leftCols, room.getSubjectPair()))
-                        .setBorder(Border.NO_BORDER));
+        mainTable.addCell(new Cell()
+                .add(createHeaderTable(data.leftCols,
+                        room.getSubjectPair(),
+                        "L",
+                        room.getType()))
+                .setBorder(Border.NO_BORDER));
 
-        mainTable.addCell(
-                new Cell().add(createHeaderTable(data.rightCols, room.getSubjectPair()))
-                        .setBorder(Border.NO_BORDER));
+        mainTable.addCell(new Cell()
+                .add(createHeaderTable(data.rightCols,
+                        room.getSubjectPair(),
+                        "R",
+                        room.getType()))
+                .setBorder(Border.NO_BORDER));
 
         for (int row = 1; row <= data.maxRow; row++) {
 
-            mainTable.addCell(
-                    new Cell().add(createDataRow(row, data.leftCols, "L", data.seatMap))
-                            .setBorder(Border.NO_BORDER));
+            mainTable.addCell(new Cell()
+                    .add(createDataRow(row, data.leftCols, "L", data.seatMap))
+                    .setBorder(Border.NO_BORDER));
 
-            mainTable.addCell(
-                    new Cell().add(createDataRow(row, data.rightCols, "R", data.seatMap))
-                            .setBorder(Border.NO_BORDER));
+            mainTable.addCell(new Cell()
+                    .add(createDataRow(row, data.rightCols, "R", data.seatMap))
+                    .setBorder(Border.NO_BORDER));
         }
 
         doc.add(mainTable);
@@ -221,71 +225,61 @@ public class PdfGenerator {
         mainTable.addCell(createEmptyCell());
         mainTable.addCell(createSectionHeader("RIGHT SIDE"));
 
-        mainTable.addCell(new Cell().add(createHeaderTable(data.leftCols, room.getSubjectPair())).setBorder(Border.NO_BORDER));
+        mainTable.addCell(new Cell()
+                .add(createHeaderTable(data.leftCols,
+                        room.getSubjectPair(),
+                        "L",
+                        room.getType()))
+                .setBorder(Border.NO_BORDER));
+
         mainTable.addCell(createEmptyCell());
-        mainTable.addCell(new Cell().add(createHeaderTable(data.centreCols, room.getSubjectPair())).setBorder(Border.NO_BORDER));
+
+        mainTable.addCell(new Cell()
+                .add(createHeaderTable(data.centreCols,
+                        room.getSubjectPair(),
+                        "C",
+                        room.getType()))
+                .setBorder(Border.NO_BORDER));
+
         mainTable.addCell(createEmptyCell());
-        mainTable.addCell(new Cell().add(createHeaderTable(data.rightCols, room.getSubjectPair())).setBorder(Border.NO_BORDER));
+
+        mainTable.addCell(new Cell()
+                .add(createHeaderTable(data.rightCols,
+                        room.getSubjectPair(),
+                        "R",
+                        room.getType()))
+                .setBorder(Border.NO_BORDER));
 
         for (int row = 1; row <= data.maxRow; row++) {
 
-            mainTable.addCell(new Cell().add(createDataRow(row, data.leftCols, "L", data.seatMap)).setBorder(Border.NO_BORDER));
+            mainTable.addCell(new Cell()
+                    .add(createDataRow(row, data.leftCols, "L", data.seatMap))
+                    .setBorder(Border.NO_BORDER));
+
             mainTable.addCell(createEmptyCell());
 
-            mainTable.addCell(new Cell().add(createDataRow(row, data.centreCols, "C", data.seatMap)).setBorder(Border.NO_BORDER));
+            mainTable.addCell(new Cell()
+                    .add(createDataRow(row, data.centreCols, "C", data.seatMap))
+                    .setBorder(Border.NO_BORDER));
+
             mainTable.addCell(createEmptyCell());
 
-            mainTable.addCell(new Cell().add(createDataRow(row, data.rightCols, "R", data.seatMap)).setBorder(Border.NO_BORDER));
+            mainTable.addCell(new Cell()
+                    .add(createDataRow(row, data.rightCols, "R", data.seatMap))
+                    .setBorder(Border.NO_BORDER));
         }
 
         doc.add(mainTable);
     }
 
-    /* ================= DATA EXTRACTION ================= */
+    /* ================= HEADER LOGIC ================= */
 
-    private static class SectionData {
-        Map<String, SeatAssignment> seatMap = new HashMap<>();
-        int maxRow = 0;
-        int leftCols = 0;
-        int centreCols = 0;
-        int rightCols = 0;
-    }
+    private static Table createHeaderTable(int cols,
+                                           List<String> subjectPair,
+                                           String side,
+                                           Room.RoomType type) {
 
-    private static SectionData extractSectionData(RoomAllocation room) {
-
-        SectionData data = new SectionData();
-
-        for (SeatAssignment seat : room.getAllocations()) {
-
-            data.seatMap.put(seat.getSeatId(), seat);
-
-            String[] parts = seat.getSeatId().split("-");
-            if (parts.length == 2) {
-
-                int row = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
-                int col = Integer.parseInt(parts[1]);
-
-                data.maxRow = Math.max(data.maxRow, row);
-
-                if (seat.getSeatId().startsWith("L"))
-                    data.leftCols = Math.max(data.leftCols, col);
-
-                else if (seat.getSeatId().startsWith("C"))
-                    data.centreCols = Math.max(data.centreCols, col);
-
-                else if (seat.getSeatId().startsWith("R"))
-                    data.rightCols = Math.max(data.rightCols, col);
-            }
-        }
-
-        return data;
-    }
-
-    /* ================= HELPERS ================= */
-
-    private static Table createHeaderTable(int cols, List<String> subjectPair) {
-
-        if (cols <= 0) cols = 1;   // prevent crash
+        if (cols <= 0) cols = 1;
 
         Table header = new Table(cols);
         header.setWidth(UnitValue.createPercentValue(100));
@@ -296,10 +290,55 @@ public class PdfGenerator {
                     .setTextAlignment(TextAlignment.CENTER));
         }
 
+        boolean single = subjectPair.size() == 1;
+
+        String subjectA = subjectPair.get(0).split("_")[0].toUpperCase();
+        String subjectB = single ? null :
+                subjectPair.get(1).split("_")[0].toUpperCase();
+
         for (int col = 1; col <= cols; col++) {
 
-            String subject = subjectPair.get((col - 1) % subjectPair.size())
-                    .split("_")[0].toUpperCase();
+            String subject = "";
+
+            if (type == Room.RoomType.LT) {
+
+                if (single) {
+
+                    if (side.equals("L") && Set.of(1,5,8).contains(col))
+                        subject = subjectA;
+
+                    if (side.equals("R") && Set.of(2,7).contains(col))
+                        subject = subjectA;
+
+                } else {
+
+                    if (side.equals("L")) {
+                        if (Set.of(1,5,8).contains(col)) subject = subjectA;
+                        if (Set.of(2,7).contains(col)) subject = subjectB;
+                    }
+
+                    if (side.equals("R")) {
+                        if (Set.of(2,7).contains(col)) subject = subjectA;
+                        if (Set.of(1,5,8).contains(col)) subject = subjectB;
+                    }
+                }
+
+            } else { // ALT
+
+                if (single) {
+
+                    if (col == 1)
+                        subject = subjectA;
+
+                } else {
+
+                    if (col == 1)
+                        subject = subjectA;
+
+                    if (col == 3)
+                        subject = subjectB;
+                }
+            }
 
             header.addCell(new Cell()
                     .add(new Paragraph(subject).setFontSize(8).setBold())
@@ -309,11 +348,15 @@ public class PdfGenerator {
         return header;
     }
 
-    private static Table createDataRow(int row, int cols,
+    /* ================= DATA ROW ================= */
+
+    private static Table createDataRow(int row,
+                                       int cols,
                                        String side,
                                        Map<String, SeatAssignment> seatMap) {
 
         if (cols <= 0) cols = 1;
+
         Table table = new Table(cols);
         table.setWidth(UnitValue.createPercentValue(100));
 
@@ -342,6 +385,44 @@ public class PdfGenerator {
         return table;
     }
 
+    /* ================= UTIL ================= */
+
+    private static class SectionData {
+        Map<String, SeatAssignment> seatMap = new HashMap<>();
+        int maxRow = 0;
+        int leftCols = 0;
+        int centreCols = 0;
+        int rightCols = 0;
+    }
+
+    private static SectionData extractSectionData(RoomAllocation room) {
+
+        SectionData data = new SectionData();
+
+        for (SeatAssignment seat : room.getAllocations()) {
+
+            data.seatMap.put(seat.getSeatId(), seat);
+
+            String[] parts = seat.getSeatId().split("-");
+            if (parts.length == 2) {
+
+                int row = Integer.parseInt(parts[0].replaceAll("[^0-9]", ""));
+                int col = Integer.parseInt(parts[1]);
+
+                data.maxRow = Math.max(data.maxRow, row);
+
+                if (seat.getSeatId().startsWith("L"))
+                    data.leftCols = Math.max(data.leftCols, col);
+                else if (seat.getSeatId().startsWith("C"))
+                    data.centreCols = Math.max(data.centreCols, col);
+                else if (seat.getSeatId().startsWith("R"))
+                    data.rightCols = Math.max(data.rightCols, col);
+            }
+        }
+
+        return data;
+    }
+
     private static Cell createSectionHeader(String title) {
         return new Cell()
                 .add(new Paragraph(title).setFontSize(9).setBold())
@@ -355,6 +436,7 @@ public class PdfGenerator {
     }
 
     private static void addWall(Document doc) {
+
         Table wall = new Table(1);
         wall.setWidth(UnitValue.createPercentValue(100));
         wall.setMarginTop(5);
