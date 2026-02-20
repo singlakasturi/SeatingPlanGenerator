@@ -49,45 +49,91 @@ export default function SubmitDetails() {
     }
   };
 
-  /* ================= DATE SHEET ================= */
+  /* ================= DATE SHEET PARSER ================= */
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    console.log("📂 File Selected:", file.name);
+
     const reader = new FileReader();
+
     reader.onload = (evt) => {
+      console.log("📖 File Loaded");
+
       const workbook = XLSX.read(evt.target.result, { type: "binary" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
       const rows = XLSX.utils.sheet_to_json(sheet, {
         header: 1,
-        range: 6,
         defval: "",
       });
 
-      const parsed = {};
-      for (const row of rows.slice(1)) {
-        if (!row[0]) break;
+      console.log("📊 Total Rows:", rows.length);
+      console.log("📋 FULL ROWS:", rows);
 
-        let date;
-        if (typeof row[0] === "number") {
-          const d = XLSX.SSF.parse_date_code(row[0]);
-          date = `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
-        } else {
-          date = row[0];
-        }
+const parsed = {};
 
-        const subjects = [];
-        for (let i = 1; i < row.length; i++) {
-          if (row[i]) subjects.push(row[i].toString().split(/\s|\n/)[0]);
-        }
+for (let i = 3; i < rows.length; i++) {
+  const row = rows[i];
+  if (!row) continue;
 
-        if (subjects.length) {
-          parsed[date] = [...new Set(subjects)];
-        }
+  // 🔥 Date is in column index 1 (NOT 0)
+  const rawDate = row[1];
+
+  if (!rawDate) continue;
+
+  let date;
+
+  if (typeof rawDate === "number") {
+    const d = XLSX.SSF.parse_date_code(rawDate);
+    date = `${String(d.d).padStart(2, "0")}-${String(d.m).padStart(2, "0")}-${d.y}`;
+  } else {
+    date = String(rawDate).trim();
+  }
+
+  const subjects = [];
+
+  // 🔥 Subjects start from column index 2
+  for (let j = 2; j < row.length; j++) {
+    if (!row[j]) continue;
+
+    const cellValue = String(row[j]).trim();
+
+    const lines = cellValue.split(/\n|,/);
+
+    for (let line of lines) {
+      line = line.trim();
+      if (!line) continue;
+
+      // Only match real subject codes
+      const match = line.match(/^[A-Z]{2,}\d{4,}/);
+
+      if (match) {
+        subjects.push(match[0]);
       }
+    }
+  }
+
+  if (subjects.length) {
+    parsed[date] = [...new Set(subjects)];
+  }
+}
+
+console.log("=========== FINAL PARSED SUBJECT CODES ===========");
+console.log(parsed);
+
+Object.entries(parsed).forEach(([date, subjects]) => {
+  console.log("Date:", date);
+  subjects.forEach((sub, index) => {
+    console.log(`   ${index + 1}. [${sub}] length=${sub.length}`);
+  });
+});
+
+console.log("===========================================");
 
       setDatesheet(parsed);
+      alert("Datesheet uploaded successfully!");
     };
 
     reader.readAsBinaryString(file);
@@ -96,8 +142,14 @@ export default function SubmitDetails() {
   /* ================= SUBMIT ================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!datesheet) {
-      alert("Please upload datesheet");
+
+    console.log("🚀 Submit Clicked");
+    console.log("Programme:", programme);
+    console.log("Year:", year);
+    console.log("Datesheet:", datesheet);
+
+    if (!datesheet || Object.keys(datesheet).length === 0) {
+      alert("Datesheet is empty or not parsed.");
       return;
     }
 
@@ -111,8 +163,9 @@ export default function SubmitDetails() {
       excludeRooms,
     };
 
+    console.log("📦 Payload Being Sent:", payload);
+
     try {
-      // 🔑 Store request for later reallocation
       sessionStorage.setItem("allocationRequest", JSON.stringify(payload));
 
       const res = await axios.post(
@@ -121,12 +174,20 @@ export default function SubmitDetails() {
         { withCredentials: true }
       );
 
-      // 🔑 Store allocation result
+      console.log("📥 Backend Response:", res.data);
+
       sessionStorage.setItem("allocationPayload", JSON.stringify(res.data));
       sessionStorage.setItem("hasAllocated", "true");
 
+      console.log(
+        "💾 Stored allocationPayload:",
+        sessionStorage.getItem("allocationPayload")
+      );
+
       navigate("/room-allocation", { state: res.data });
+
     } catch (err) {
+      console.error("❌ Allocation Error:", err);
       alert(
         err.response?.data?.error ||
           "Seat allocation failed. Please check room availability."
@@ -149,9 +210,7 @@ export default function SubmitDetails() {
         </div>
         <div className="nav-right">
           <a href="#contact">CONTACT US</a>
-          <a href="#" onClick={handleLogout}>
-            LOG OUT
-          </a>
+          <a href="#" onClick={handleLogout}>LOG OUT</a>
         </div>
       </div>
 
@@ -161,6 +220,8 @@ export default function SubmitDetails() {
           <h2>PROVIDE EXAM DETAILS</h2>
 
           <form onSubmit={handleSubmit}>
+
+            {/* Programme */}
             <div className="form-group">
               <label>Programme</label>
               <select
@@ -178,6 +239,7 @@ export default function SubmitDetails() {
               </select>
             </div>
 
+            {/* Year */}
             <div className="form-group">
               <label>Year</label>
               <select
@@ -194,6 +256,7 @@ export default function SubmitDetails() {
               </select>
             </div>
 
+            {/* Time */}
             <div className="form-group">
               <label>Exam Time</label>
               <div style={{ display: "flex", gap: 10 }}>
@@ -232,6 +295,7 @@ export default function SubmitDetails() {
               </div>
             </div>
 
+            {/* Rooms */}
             <div className="form-group">
               <label>Rooms</label>
               <select
@@ -267,6 +331,7 @@ export default function SubmitDetails() {
               </div>
             )}
 
+            {/* Upload */}
             <div className="form-group">
               <label>Upload Datesheet</label>
               <input
@@ -277,7 +342,9 @@ export default function SubmitDetails() {
               />
             </div>
 
-            <button className="btn-login">Submit</button>
+            <button type="submit" className="btn-login">
+              Submit
+            </button>
           </form>
         </section>
       </main>

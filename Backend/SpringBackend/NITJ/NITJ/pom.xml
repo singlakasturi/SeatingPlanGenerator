@@ -50,10 +50,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-		</dependency>
 
 		<!-- 🔑 JWT for authentication -->
 		<dependency>
@@ -102,9 +98,13 @@
   <artifactId>poi-ooxml</artifactId>
   <version>5.2.5</version>
 </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
 
-	</dependencies>
+    </dependencies>
 
 
 
