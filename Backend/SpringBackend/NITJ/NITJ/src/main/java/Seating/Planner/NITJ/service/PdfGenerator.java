@@ -4,6 +4,7 @@ import Seating.Planner.NITJ.model.Room;
 import Seating.Planner.NITJ.model.RoomAllocation;
 import Seating.Planner.NITJ.model.SeatAssignment;
 
+import Seating.Planner.NITJ.model.Section;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.geom.PageSize;
@@ -122,7 +123,7 @@ public class PdfGenerator {
                 .setBold());
 
         doc.add(new Paragraph(
-                "Seating Plan End Semester Examinations December 2025")
+                "Seating Plan")
                 .setFontSize(10)
                 .setTextAlignment(TextAlignment.CENTER));
 
@@ -428,34 +429,41 @@ public class PdfGenerator {
         int rightCols = 0;
     }
 
-    private static SectionData extractSectionData(RoomAllocation room) {
+    private static SectionData extractSectionData(RoomAllocation roomAllocation) {
 
         SectionData d = new SectionData();
 
-        for (SeatAssignment s : room.getAllocations()) {
-
+        // 1️⃣ Map filled seats
+        for (SeatAssignment s : roomAllocation.getAllocations()) {
             d.seatMap.put(s.getSeatId(), s);
-
-            String[] p = s.getSeatId().split("-");
-            int row = Integer.parseInt(p[0].replaceAll("[^0-9]", ""));
-            int col = Integer.parseInt(p[1]);
-
-            d.maxRow = Math.max(d.maxRow, row);
-
-            if (s.getSeatId().startsWith("L"))
-                d.leftCols = Math.max(d.leftCols, col);
-            else if (s.getSeatId().startsWith("C"))
-                d.centreCols = Math.max(d.centreCols, col);
-            else if (s.getSeatId().startsWith("R"))
-                d.rightCols = Math.max(d.rightCols, col);
         }
 
-        // 🔥 FORCE 3 COLUMNS FOR ALT STRUCTURE
-        if (room.getType() == Room.RoomType.ALT) {
-            d.leftCols = 3;
-            d.centreCols = 3;
-            d.rightCols = 3;
+        // 2️⃣ Recreate actual Room structure
+        Room room = new Room(
+                roomAllocation.getRoomCode(),
+                roomAllocation.getType()
+        );
+
+        int maxRows = 0;
+
+        for (Section sec : room.getSections()) {
+
+            maxRows = Math.max(maxRows, sec.getRows());
+
+            switch (sec.getName()) {
+                case "L":
+                    d.leftCols = sec.getCols();
+                    break;
+                case "C":
+                    d.centreCols = sec.getCols();
+                    break;
+                case "R":
+                    d.rightCols = sec.getCols();
+                    break;
+            }
         }
+
+        d.maxRow = maxRows;
 
         return d;
     }
