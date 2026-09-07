@@ -50,8 +50,8 @@ app.use(passport.session());
 /* ================= GOOGLE AUTH ================= */
 passport.use(
     new GoogleStrategy({
-            clientID: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            clientID: process.env.GOOGLE_CLIENT_ID || "dummy-client-id",
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || "dummy-client-secret",
             callbackURL: "http://localhost:5000/auth/google/callback",
         },
         (accessToken, refreshToken, profile, done) => {
@@ -66,21 +66,22 @@ passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
 /* ================= AUTH ================= */
+// TEMPORARY OAUTH DISABLE
 const isLoggedIn = (req, res, next) => {
-    if (req.user) return next();
-    res.status(401).json({ error: "Not authenticated" });
+    return next();
 };
 
-app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+app.get("/auth/google", (req, res) => {
+    res.redirect("http://localhost:5173/control-center");
+});
 
 app.get(
     "/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "http://localhost:5173/login" }),
     (req, res) => res.redirect("http://localhost:5173/control-center")
 );
 
-app.get("/auth/status", (req, res) => res.json({ loggedIn: !!req.user }));
-app.get("/auth/logout", (req, res) => req.logout(() => res.redirect("http://localhost:5173/login")));
+app.get("/auth/status", (req, res) => res.json({ loggedIn: true }));
+app.get("/auth/logout", (req, res) => res.redirect("http://localhost:5173/login"));
 
 /* ================= EXCEL UPLOAD ================= */
 const upload = multer({ dest: "uploads/" });
